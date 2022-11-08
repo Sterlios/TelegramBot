@@ -18,6 +18,9 @@ namespace TelegramBot
         private Chat _channel;
         private const string _applyButton = "apply";
         private const string _cancelButton = "cancel";
+        private const string _addModeratorButton = "addModerator";
+        private const string _canselModeratorButton = "canselModerator";
+        private Chat _newModeratorID = null;
 
         public СompetitionBot(string token)
         {
@@ -52,16 +55,55 @@ namespace TelegramBot
         private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(update));
+
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
             {
+                if (update.Message.Text.ToLower() == "/start")
+                {
+                    await _bot.SendTextMessageAsync(update.Message.Chat, "Доброго времени суток!");
+                    return;
+                }
+
+                if (update.Message.Text.ToLower() == "/moderator")
+                {
+                    await SendAddModeratorQuery(update);
+                    return;
+                }
+
                 await HandleMassage(update);
                 return;
             }
+
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
             {
                 await HandleButton(update);
                 return;
             }
+        }
+
+        private async Task SendAddModeratorQuery(Update update)
+        {
+            foreach (var moderator in _moderators)
+            {
+                var buttons = new InlineKeyboardMarkup(new[]
+                {
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("Принять", _addModeratorButton),
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("Отклонить", _canselModeratorButton),
+                    },
+                });
+
+                await _bot.SendTextMessageAsync(moderator, $"Стать модератором желает " +
+                    $"{update.Message.From.FirstName} " +
+                    $"{update.Message.From.LastName} " +
+                    $"(@{update.Message.From.Username}) id: {update.Message.From.Id}", replyMarkup: buttons);
+            }
+
+            _newModeratorID = update.Message.Chat;
         }
 
         private async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -102,12 +144,12 @@ namespace TelegramBot
                     },
                 });
 
-                Message buttonCallBack = _bot.SendTextMessageAsync(moderator,
+                await _bot.SendTextMessageAsync(moderator,
                     $"Видео от пользователя " +
                     $"{update.Message.Chat.FirstName} " +
                     $"{update.Message.Chat.LastName} " +
                     $"(@{update.Message.Chat.Username})",
-                    replyMarkup: buttons, replyToMessageId: memberMessage.MessageId).Result;
+                    replyMarkup: buttons, replyToMessageId: memberMessage.MessageId);
             }
         }
 
@@ -124,21 +166,59 @@ namespace TelegramBot
                 case _cancelButton:
                     await SendAnswers(update, "ОТКЛОНЕНО");
                     break;
+                case _addModeratorButton:
+                    await AddModerator(update);
+                    break;
                 default:
                     break;
             }
         }
 
+        private async Task AddModerator(Update update)
+        {
+            string message = $"Пользователь " +
+                $"{_newModeratorID.FirstName} " +
+                $"{_newModeratorID.LastName} " +
+                $"(@{_newModeratorID.Username}) id: {_newModeratorID.Id}\n" +
+                $"Добавлен в модераторы\n" +
+                $"Добавивший модератор: " +
+                $"{update.CallbackQuery.From.FirstName} " +
+                $"{update.CallbackQuery.From.LastName} " +
+                $"(@{update.CallbackQuery.From.Username})";
+            await _bot.DeleteMessageAsync(update.CallbackQuery.Message.Chat, update.CallbackQuery.Message.MessageId);
+
+            foreach (var moderator in _moderators)
+            {
+                await _bot.SendTextMessageAsync(moderator, message);
+            }
+
+            _moderators.Add(_newModeratorID);
+        }
+
         private async Task SendAnswers(Update update, string answer)
         {
-            await _bot.SendTextMessageAsync(update.CallbackQuery.Message.Chat,
-                $"Видео от пользователя " +
+            string message = $"Видео {update.CallbackQuery.Message.Date.ToLocalTime()} от пользователя " +
                 $"{update.CallbackQuery.Message.Chat.FirstName} " +
                 $"{update.CallbackQuery.Message.Chat.LastName} " +
                 $"(@{update.CallbackQuery.Message.Chat.Username})\n" +
-                $"{answer}",
-                replyToMessageId: update.CallbackQuery.Message.MessageId - 1);
+                $"{answer}\n" +
+                $"Модератор: " +
+                $"{update.CallbackQuery.From.FirstName} " +
+                $"{update.CallbackQuery.From.LastName} " +
+                $"(@{update.CallbackQuery.From.Username})";
+            var query = update.CallbackQuery.Message.Chat;
+
+            await _bot.SendTextMessageAsync(update.CallbackQuery.Message.Chat, message, replyToMessageId: update.CallbackQuery.Message.MessageId - 1);
             await _bot.DeleteMessageAsync(update.CallbackQuery.Message.Chat, update.CallbackQuery.Message.MessageId);
+
+            foreach (var moderator in _moderators)
+            {
+                if (moderator != update.CallbackQuery.Message.Chat)
+                {
+                    await _bot.SendTextMessageAsync(moderator, message);
+                }
+            }
+
             await _bot.SendTextMessageAsync(update.CallbackQuery.Message.ReplyToMessage.ForwardFrom.Id, answer);
         }
     }
