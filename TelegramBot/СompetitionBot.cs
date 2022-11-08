@@ -13,7 +13,6 @@ namespace TelegramBot
 {
     class СompetitionBot
     {
-        
         private ITelegramBotClient _bot;
         private List<ChatId> _moderators = new List<ChatId>();
         private Chat _channel;
@@ -23,8 +22,8 @@ namespace TelegramBot
         public СompetitionBot(string token)
         {
             _bot = new TelegramBotClient(token);
-            //_moderators.Add(474698824); // @alinavolynets
-            _moderators.Add(737444990); // @Kuzmin_Anton_S
+            _moderators.Add(474698824); // @alinavolynets
+            //_moderators.Add(737444990); // @Kuzmin_Anton_S
             _channel = _bot.GetChatAsync("@TestForBotNa").Result;
             //_channel = _bot.GetChatAsync("@testcontestexample").Result;
         }
@@ -81,7 +80,7 @@ namespace TelegramBot
                     await SendToModerator(moderator, update);
                 }
 
-                await _bot.SendTextMessageAsync(update.Message.Chat, "Сообщение принято на модерацию!");
+                await _bot.SendTextMessageAsync(update.Message.Chat, "Сообщение отправлено модератору!");
             }
         }
 
@@ -115,35 +114,32 @@ namespace TelegramBot
         private async Task HandleButton(Update update)
         {
             var pressedButtonID = update.CallbackQuery.Data;
-            var messageId = update.CallbackQuery.Message.MessageId - 1;
-            //var fromMember = update.
 
             switch (pressedButtonID)
             {
                 case _applyButton:
                     await _bot.ForwardMessageAsync(_channel, update.CallbackQuery.Message.Chat, update.CallbackQuery.Message.ReplyToMessage.MessageId);
-                    await _bot.SendTextMessageAsync(update.CallbackQuery.Message.Chat,
-                        $"Видео от пользователя " +
-                        $"{update.CallbackQuery.Message.Chat.FirstName} " +
-                        $"{update.CallbackQuery.Message.Chat.LastName} " +
-                        $"(@{update.CallbackQuery.Message.Chat.Username})\n" +
-                        $"ПРИНЯТО",
-                        replyToMessageId: update.CallbackQuery.Message.MessageId - 1);
-                    await _bot.DeleteMessageAsync(update.CallbackQuery.Message.Chat, update.CallbackQuery.Message.MessageId);
+                    await SendAnswers(update, "ПРИНЯТО");
                     break;
                 case _cancelButton:
-                    await _bot.SendTextMessageAsync(update.CallbackQuery.Message.Chat,
-                        $"Видео от пользователя " +
-                        $"{update.CallbackQuery.Message.Chat.FirstName} " +
-                        $"{update.CallbackQuery.Message.Chat.LastName} " +
-                        $"(@{update.CallbackQuery.Message.Chat.Username})\n" +
-                        $"ОТКЛОНЕНО",
-                        replyToMessageId: update.CallbackQuery.Message.MessageId - 1);
-                    await _bot.DeleteMessageAsync(update.CallbackQuery.Message.Chat, update.CallbackQuery.Message.MessageId);
+                    await SendAnswers(update, "ОТКЛОНЕНО");
                     break;
                 default:
                     break;
             }
+        }
+
+        private async Task SendAnswers(Update update, string answer)
+        {
+            await _bot.SendTextMessageAsync(update.CallbackQuery.Message.Chat,
+                $"Видео от пользователя " +
+                $"{update.CallbackQuery.Message.Chat.FirstName} " +
+                $"{update.CallbackQuery.Message.Chat.LastName} " +
+                $"(@{update.CallbackQuery.Message.Chat.Username})\n" +
+                $"{answer}",
+                replyToMessageId: update.CallbackQuery.Message.MessageId - 1);
+            await _bot.DeleteMessageAsync(update.CallbackQuery.Message.Chat, update.CallbackQuery.Message.MessageId);
+            await _bot.SendTextMessageAsync(update.CallbackQuery.Message.ReplyToMessage.ForwardFrom.Id, answer);
         }
     }
 }
