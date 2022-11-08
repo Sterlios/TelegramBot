@@ -12,13 +12,14 @@ namespace TelegramBot
 {
     class СompetitionBot
     {
-        private ITelegramBotClient _bot;
-        private List<ChatId> _moderators = new List<ChatId>();
-        private Chat _channel;
         private const string _applyButton = "apply";
         private const string _cancelButton = "cancel";
         private const string _addModeratorButton = "addModerator";
         private const string _canselModeratorButton = "canselModerator";
+
+        private ITelegramBotClient _bot;
+        private List<ChatId> _moderators = new List<ChatId>();
+        private Chat _channel;
         private Chat _newModeratorID = null;
 
         public СompetitionBot(string token)
@@ -26,8 +27,8 @@ namespace TelegramBot
             _bot = new TelegramBotClient(token);
             _moderators.Add(474698824); // @alinavolynets
             //_moderators.Add(737444990); // @Kuzmin_Anton_S
-            _channel = _bot.GetChatAsync("@TestForBotNa").Result;
-            //_channel = _bot.GetChatAsync("@testcontestexample").Result;
+            //_channel = _bot.GetChatAsync("@TestForBotNa").Result;
+            _channel = _bot.GetChatAsync("@testcontestexample").Result;
         }
 
         public void Start()
@@ -57,13 +58,13 @@ namespace TelegramBot
 
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
             {
-                if (update.Message.Text.ToLower() == "/start")
+                if (update.Message.Text?.ToLower() == "/start")
                 {
                     await _bot.SendTextMessageAsync(update.Message.Chat, "Доброго времени суток!");
                     return;
                 }
 
-                if (update.Message.Text.ToLower() == "/moderator")
+                if (update.Message.Text?.ToLower() == "/moderator")
                 {
                     await SendAddModeratorQuery(update);
                     return;
