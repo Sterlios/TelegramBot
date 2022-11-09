@@ -149,20 +149,11 @@ namespace TelegramBot
             }
 
             await _moderators.SendApplyingAddModerator(update);
-
         }
 
         private async Task SendAnswers(Update update, string answer)
         {
-            //string message = $"Видео {update.CallbackQuery.Message.Date.ToLocalTime()} от пользователя " +
-            //    $"{update.CallbackQuery.Message.Chat.FirstName} " +
-            //    $"{update.CallbackQuery.Message.Chat.LastName} " +
-            //    $"(@{update.CallbackQuery.Message.Chat.Username})\n" +
-            //    $"{answer}\n" +
-            //    $"Модератор: " +
-            //    $"{update.CallbackQuery.From.FirstName} " +
-            //    $"{update.CallbackQuery.From.LastName} " +
-            //    $"(@{update.CallbackQuery.From.Username})";
+            await _moderators.SendAnswer(update.CallbackQuery.Message.ReplyToMessage, update.CallbackQuery.From, answer);
             //var query = update.CallbackQuery.Message.Chat;
 
             //await _bot.SendTextMessageAsync(update.CallbackQuery.Message.Chat, message, replyToMessageId: update.CallbackQuery.Message.MessageId - 1);

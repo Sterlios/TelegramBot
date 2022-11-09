@@ -83,6 +83,11 @@ namespace TelegramBot
             await _bot.SendTextMessageAsync(Chat, message);
         }
 
+        public async Task SendAnswer(string message)
+        {
+            await _bot.SendTextMessageAsync(Chat, message);
+        }
+
         private void InitializeButtons(ref IReplyMarkup markup, string applyButton, string cancelButton)
         {
             markup = new InlineKeyboardMarkup(new[]

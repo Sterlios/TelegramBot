@@ -75,5 +75,23 @@ namespace TelegramBot
 
             return isFound;
         }
+
+        public async Task SendAnswer(Message userMessage, User fromModerator, string answer)
+        {
+            string message = $"Видео {userMessage.Date.ToLocalTime()} от пользователя " +
+                $"{userMessage.ForwardFrom.FirstName} " +
+                $"{userMessage.ForwardFrom.LastName} " +
+                $"(@{userMessage.ForwardFrom.Username})\n" +
+                $"{answer}\n" +
+                $"Модератор: " +
+                $"{fromModerator.FirstName} " +
+                $"{fromModerator.LastName} " +
+                $"(@{fromModerator.Username})";
+
+            foreach (var moderator in _moderators)
+            {
+                await moderator.SendAnswer(message);
+            }
+        }
     }
 }
