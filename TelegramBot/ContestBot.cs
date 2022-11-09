@@ -28,13 +28,9 @@ namespace TelegramBot
         public ContestBot(string token)
         {
             _bot = new TelegramBotClient(token);
-            _moderators = new ModeratorsPool(new Moderator(_bot, _bot.GetChatAsync(474698824).Result));
+            _moderators = new ModeratorsPool(new Moderator(_bot, _bot.GetChatAsync(ModeratorChatID).Result));
 
-            Chat chat = _bot.GetChatAsync(474698824).Result;
-            //_moderators.Add(737444990); // @Kuzmin_Anton_S
-            _channel = _bot.GetChatAsync("@TestForBotNa").Result;
-
-            //_channel = Bot.GetChatAsync("@testcontestexample").Result;
+            _channel = _bot.GetChatAsync(ChannelChatId).Result;
         }
 
         public void Start()
