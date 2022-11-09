@@ -16,3 +16,4 @@ D:\Programming\Projects\TelegramBot\TelegramBot\obj\Release\netcoreapp3.1\Telegr
 D:\Programming\Projects\TelegramBot\TelegramBot\obj\Release\netcoreapp3.1\TelegramBot.dll
 D:\Programming\Projects\TelegramBot\TelegramBot\obj\Release\netcoreapp3.1\TelegramBot.pdb
 D:\Programming\Projects\TelegramBot\TelegramBot\obj\Release\netcoreapp3.1\TelegramBot.genruntimeconfig.cache
+D:\Programming\Projects\TelegramBot\TelegramBot\obj\Release\netcoreapp3.1\TelegramBot.csproj.AssemblyReference.cache
